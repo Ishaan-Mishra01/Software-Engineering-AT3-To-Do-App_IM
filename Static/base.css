@@ -24,12 +24,18 @@ body {
     border-radius: 15px;
     box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.332); /*change transparency*/
     width: 50%;
+    max-width: 30em;
     /* media query for scaling to 90% for phone*/
     padding: 1em;
     display: flex;
     flex-direction: column;
     align-items: center; /* normally aligns vertically, but flex direction as column flips the axis*/
     justify-content: center; /*normally aligns horizontally*/
+}
+@media (max-width: 600px) {
+    .login-form-container {
+        width: 90%;
+    }
 }
 .input-fields {
     width: 85%; /*relative to parent*/
