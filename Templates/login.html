@@ -12,23 +12,24 @@
 <body>
    
         <div class="login-form-container">
-
             <img src="{{ url_for('static', filename='To-Do_App_Logo.png') }}" class="logo">
             <h2>Register</h2>
+            <form method="POST" action="/login" enctype="multipart/form-data">
             <div class="input-fields">
                 <div class="input-field">
                     <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Enter your email." required></input>
+                    <input type="email" name='email' id="email" placeholder="example@example.com" minlength="4" maxlength="200" required></input>
                 </div>
                 <div class="input-field">
                     <label for="username">Username</label>
-                    <input type="text" id="username" placeholder="Enter your username." required></input>
+                    <input type="text" name='username' id="username" placeholder="Enter your username." minlength="2" maxlength="200" required></input>
                 </div>
                 <div class="input-field">
                     <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password." required></input>
+                    <input type="password" name='password' id="password" placeholder="Enter your password." minlength="8" maxlength="200" required></input>
                 </div>
                 <input type="submit" class="submit-button" value="Create account"></input>
+            
             </div>
-   
+            </form>
 </body>

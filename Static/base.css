@@ -6,7 +6,7 @@
     padding: 0;
 }
 .header {
-    background-color: #dcdcdc;
+    background-color: #c9c9c9;
 }
 .logo {
     width: 7em;
@@ -19,6 +19,7 @@ body {
     justify-content: center;
     align-items: center;
 }
+
 .login-form-container {
     background-color: white;
     border-radius: 15px;
@@ -36,6 +37,11 @@ body {
     .login-form-container {
         width: 90%;
     }
+}
+form {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 .input-fields {
     width: 85%; /*relative to parent*/
