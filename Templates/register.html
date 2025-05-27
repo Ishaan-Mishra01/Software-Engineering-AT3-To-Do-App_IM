@@ -7,13 +7,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <title>Login</title>
+    <title>Register</title>
 </head>
 <body>
    
         <div class="login-form-container">
             <img src="{{ url_for('static', filename='To-Do_App_Logo.png') }}" class="logo">
-            <h2>Login</h2>
+            <h2>Register</h2>
             <form method="POST" action="/register" enctype="multipart/form-data">
             <div class="input-fields">
                 <div class="input-field">
@@ -28,7 +28,7 @@
                     <label for="password">Password</label>
                     <input type="password" name='password' id="password" placeholder="Enter your password." minlength="8" maxlength="200" required></input>
                 </div>
-                <input type="submit" class="submit-button" value="Login"></input>
+                <input type="submit" class="submit-button" value="Create account"></input>
             
             </div>
             </form>
