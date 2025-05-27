@@ -8,6 +8,12 @@ from app.models import load_data, save_data
 main = Blueprint('main', __name__)
 
 @main.route('/')
+def index():
+    if 'user' not in session:
+        return redirect(url_for('main.login'))
+    return redirect(url_for('main.home'))
+
+@main.route('/home')
 def home():
     if 'user' not in session:
         return redirect(url_for('main.login'))
