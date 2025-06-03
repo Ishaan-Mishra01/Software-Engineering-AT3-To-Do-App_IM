@@ -7,7 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <title>Home - To-Do App</title>
+    <title>{% block title %}Home - To-Do App{% endblock %}</title>
+
+    {% block_extra_head %}{% endblock %}
 </head>
 <body class="home-body">
     <div class="header">
@@ -30,6 +32,7 @@
                 <li class="list-item active">All Tasks</li>
                 <li class="list-item">Personal</li>
                 <li class="list-item">Work</li>
+                <li class="list-item">Calendar</li> <!--Need a little help implimenting-->
             </ul>
             <button class="add-list-btn">+ New List</button>
         </div>

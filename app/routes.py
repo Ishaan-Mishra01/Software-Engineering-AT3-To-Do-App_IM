@@ -4,8 +4,10 @@ Routes for To-Do Application
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from datetime import datetime
 from app.models import load_data, save_data
+import calendar
 
 main = Blueprint('main', __name__)
+calendar_routes = Blueprint('calendar_routes', __name__)
 
 @main.route('/')
 def index():
@@ -109,3 +111,36 @@ def task_detail(task_id):
         data['tasks'][user_email] = [t for t in user_tasks if t['id'] != task_id]
         save_data(data)
         return jsonify({'success': True})
+    
+@calendar_routes.route('/calendar_server')
+def calendar_server():
+    try:
+        #tryna make sure it's an int so that the server is safe
+        year = int(request.args.get("year", datetime.now().year()))
+        month = int(request.args.get("month", datetime.now().month()))
+    except ValueError:
+        return "Invalid Arguements", 400
+
+    month_name = calendar.month_name[month]
+    cal = calendar.Calendar().monthdatescalendar(year, month)
+
+    #to calc prev and next month
+    if month > 1:
+        prev_month =  month - 1
+        prev_year = year
+    else:
+        prev_month =  12
+        prev_year = year - 1
+
+    if month < 12:
+        next_month =  month + 1
+        next_year = year
+    else:
+        next_month =  1
+        next_year = year + 1
+    return render_template(
+        "calendar.html", year=year, month=month, calendar=cal,
+        prev_year=prev_year, prev_month=prev_month, 
+        next_year=next_year, next_month=next_month,
+        month_name=month_name
+        )
