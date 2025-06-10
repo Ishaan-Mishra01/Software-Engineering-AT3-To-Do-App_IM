@@ -1,5 +1,14 @@
-Flask==3.0.0
-Werkzeug==3.0.1
 
+
+# Sir How do i add the pip install google-genai here for it to be downloaded, as this is needed for the chatbot. And pip install python-dotenv
 # Testing dependencies
+
+
+Flask===3.1.1
+Flask-SQLAlchemy==3.1.1
+google-auth==2.40.3
+google-genai==1.19.0
+python-dotenv==1.1.0
 requests==2.32.3
+SQLAlchemy==2.0.41
+Werkzeug==3.1.3
