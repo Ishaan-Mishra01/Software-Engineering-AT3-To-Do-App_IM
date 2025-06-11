@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <title>{% block title %}Home - To-Do App{% endblock %}</title>
 
-    {% block_extra_head %}{% endblock %}
+    {% block extra_head %}{% endblock %}
 </head>
 <body class="home-body">
     <div class="header">
@@ -27,19 +27,23 @@
     </div>
     <div class="main-content">
         <div class="sidebar">
-            <h3>Lists</h3>
-            <ul class="todo-lists">
-                <li class="list-item active">All Tasks</li>
-                <li class="list-item">Personal</li>
-                <li class="list-item">Work</li>
-                <li class="list-item">Calendar</li> <!--Need a little help implimenting-->
-            </ul>
-            <button class="add-list-btn">+ New List</button>
+            <div class="sidebar-content">
+                <h3>Lists</h3>
+                <ul class="todo-lists">
+                    <li class="list-item active">All Tasks</li>
+                    <li class="list-item">Personal</li>
+                    <li class="list-item">Work</li>
+                    <li class="list-item"><a href="{{ url_for('calendar_routes.calendar_view') }}" style="text-decoration: none; color: inherit;">Calendar</a></li>
+                </ul>
+                <button class="add-list-btn">+ New List</button>
+            </div>
         </div>
+        {% block content %}
         <div class="todo-container">
             <h2>All Tasks</h2>
             <div class="add-task">
                 <input type="text" placeholder="Add a task..." class="task-input">
+                <input type="date" class="due-date-input" placeholder="Due date">
                 <button class="add-task-btn">Add</button>
             </div>
             <div class="tasks">
@@ -50,7 +54,25 @@
                 </div>
             </div>
         </div>
+        {% endblock %}
     </div>
+    
+    <!-- Chatbot Interface -->
+    <div id="chatbot-container" class="chatbot-container">
+        <div id="chatbot-header" class="chatbot-header">
+            <span>🤖 Assistant</span>
+            <button id="chatbot-close" class="chatbot-close">×</button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages"></div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbot-input" placeholder="Ask me anything about the app...">
+            <button id="chatbot-send">Send</button>
+        </div>
+    </div>
+    
+    <!-- Chatbot Toggle Button -->
+    <button id="chatbot-toggle" class="chatbot-toggle">🤖</button>
+    
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

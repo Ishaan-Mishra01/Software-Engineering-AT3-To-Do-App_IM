@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add task functionality
     const taskInput = document.querySelector('.task-input');
+    const dueDateInput = document.querySelector('.due-date-input');
     const addTaskBtn = document.querySelector('.add-task-btn');
 
     addTaskBtn.addEventListener('click', addTask);
@@ -76,9 +77,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function createTaskElement(task) {
         const taskItem = document.createElement('div');
         taskItem.className = 'task-item';
+        const dueDateDisplay = task.due_date ? `<span class="due-date">Due: ${task.due_date}</span>` : '';
         taskItem.innerHTML = `
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
             <span class="task-text ${task.completed ? 'completed' : ''}">${task.text}</span>
+            ${dueDateDisplay}
             <button class="delete-task">×</button>
         `;
 
@@ -104,6 +107,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskText = taskInput.value.trim();
         if (!taskText) return;
 
+        const dueDate = dueDateInput.value;
+
         try {
             const response = await fetch('/api/tasks', {
                 method: 'POST',
@@ -112,7 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     text: taskText,
-                    list: currentList === 'All Tasks' ? 'Personal' : currentList
+                    list: currentList === 'All Tasks' ? 'Personal' : currentList,
+                    due_date: dueDate || null
                 })
             });
 
@@ -121,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 allTasks.push(newTask);
                 displayTasks();
                 taskInput.value = '';
+                dueDateInput.value = '';
             }
         } catch (error) {
             console.error('Error adding task:', error);
@@ -159,5 +166,83 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error deleting task:', error);
         }
+    }
+
+    // Chatbot functionality
+    const chatbotToggle = document.getElementById('chatbot-toggle');
+    const chatbotContainer = document.getElementById('chatbot-container');
+    const chatbotClose = document.getElementById('chatbot-close');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotSend = document.getElementById('chatbot-send');
+    const chatbotMessages = document.getElementById('chatbot-messages');
+
+    let chatbotOpen = false;
+
+    // Toggle chatbot
+    chatbotToggle.addEventListener('click', function() {
+        chatbotOpen = !chatbotOpen;
+        chatbotContainer.style.display = chatbotOpen ? 'flex' : 'none';
+        chatbotToggle.style.display = chatbotOpen ? 'none' : 'block';
+        
+        if (chatbotOpen && chatbotMessages.children.length === 0) {
+            // Add welcome message
+            addChatMessage('🤖 Hi! I\'m here to help you with your to-do app. Ask me anything!', 'bot');
+        }
+    });
+
+    // Close chatbot
+    chatbotClose.addEventListener('click', function() {
+        chatbotOpen = false;
+        chatbotContainer.style.display = 'none';
+        chatbotToggle.style.display = 'block';
+    });
+
+    // Send message
+    chatbotSend.addEventListener('click', sendChatMessage);
+    chatbotInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendChatMessage();
+        }
+    });
+
+    async function sendChatMessage() {
+        const message = chatbotInput.value.trim();
+        if (!message) return;
+
+        // Add user message
+        addChatMessage(message, 'user');
+        chatbotInput.value = '';
+
+        try {
+            const response = await fetch('/api/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                addChatMessage(data.message, 'bot');
+            } else {
+                addChatMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            }
+        } catch (error) {
+            console.error('Chatbot error:', error);
+            addChatMessage('Sorry, I\'m having trouble connecting. Please try again.', 'bot');
+        }
+    }
+
+    function addChatMessage(message, sender) {
+        const messageElement = document.createElement('div');
+        messageElement.className = `chat-message ${sender}`;
+        messageElement.innerHTML = `
+            <div class="message-content">
+                ${message.replace(/\n/g, '<br>')}
+            </div>
+        `;
+        chatbotMessages.appendChild(messageElement);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
     }
 });

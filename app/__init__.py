@@ -17,7 +17,8 @@ def create_app(config_name=None):
     app.config.from_object(config[config_name])
     
     # Register blueprints/routes
-    from app.routes import main
+    from app.routes import main, calendar_routes
     app.register_blueprint(main)
+    app.register_blueprint(calendar_routes)
     
     return app

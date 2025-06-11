@@ -1,24 +1,24 @@
 {% extends "home.html" %}
 
-{% endblock %}{% endblock %}
-{% block_extra_head %}
+{% block extra_head %}
 <link href="https://cdn.jsdelivr.net/npm.bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="../static/css/calendar.css">
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-body">
-        <div class="card-header d-flex justify-content-between border-0">   
-            <a href="{{ url_for('calendar_server', year=prev_year, month=prev_month) }}" class="btn btn-tertiary text-center">&laquo;</a>
-            <div class="d-flex align-items-center ">{{month_name}} {{year}}</div>
-            <a href="{{ url_for('calendar_server', year=next_year, month=next_month) }}" class="btn btn-tertiary text-center">&raquo;</a>
+<div class="todo-container">
+    <h2>Calendar View</h2>
+    <div class="tasks">
+        <div class="calendar-header">   
+            <a href="{{ url_for('calendar_routes.calendar_view', year=prev_year, month=prev_month) }}" class="calendar-nav-btn">&laquo;</a>
+            <div class="calendar-title">{{month_name}} {{year}}</div>
+            <a href="{{ url_for('calendar_routes.calendar_view', year=next_year, month=next_month) }}" class="calendar-nav-btn">&raquo;</a>
         </div>
-        <table class="table table-bordered">
+        <table class="calendar-table">
             <thead>
                 <tr>
-                    {% for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}\
-                        <th>{{ day }}</th>
+                    {% for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
+                        <th class="calendar-header-day">{{ day }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -26,7 +26,18 @@
                 {% for week in calendar %}
                 <tr>
                     {% for day in week %}
-                    <td>{{ day if day != 0 else '' }}</td>
+                    <td class="calendar-day">
+                        <div class="day-number">{{ day.day if day.month == month else '' }}</div>
+                        {% if day.strftime('%Y-%m-%d') in tasks_by_date %}
+                            <div class="tasks-for-day">
+                                {% for task in tasks_by_date[day.strftime('%Y-%m-%d')] %}
+                                    <div class="calendar-task {{ 'completed' if task.completed else '' }}">
+                                        {{ task.text[:20] }}{% if task.text|length > 20 %}...{% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
