@@ -16,31 +16,58 @@ document.addEventListener('click', function(event) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    let currentList = 'All Tasks';
+    // Get current list from the page title or determine from URL
+    let currentList = document.querySelector('.todo-container h2')?.textContent || 'All Tasks';
     let allTasks = [];
 
-    // Load tasks on page load
-    loadTasks();
+    // Load tasks on page load (only if not on calendar page)
+    if (!window.location.pathname.includes('/calendar')) {
+        loadTasks();
+    }
 
-    // Add task functionality
+    // Add task functionality (only if elements exist)
     const taskInput = document.querySelector('.task-input');
     const dueDateInput = document.querySelector('.due-date-input');
     const addTaskBtn = document.querySelector('.add-task-btn');
 
-    addTaskBtn.addEventListener('click', addTask);
-    taskInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            addTask();
-        }
-    });
+    if (addTaskBtn) {
+        addTaskBtn.addEventListener('click', addTask);
+    }
+    if (taskInput) {
+        taskInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+    }
 
-    // List selection
+    // List selection with URL updates
     document.querySelectorAll('.list-item').forEach(item => {
+        // Skip calendar item as it has its own link
+        if (item.querySelector('a')) return;
+        
         item.addEventListener('click', function() {
-            document.querySelector('.list-item.active').classList.remove('active');
+            const newList = this.textContent;
+            
+            // Update active state
+            document.querySelector('.list-item.active')?.classList.remove('active');
             this.classList.add('active');
-            currentList = this.textContent;
+            
+            // Update current list and page content
+            currentList = newList;
             document.querySelector('.todo-container h2').textContent = currentList;
+            
+            // Update URL without reload
+            const urls = {
+                'All Tasks': '/tasks/all',
+                'Personal': '/tasks/personal', 
+                'Work': '/tasks/work'
+            };
+            if (urls[newList]) {
+                window.history.pushState({}, '', urls[newList]);
+            }
+            
+            // Filter and display tasks
             displayTasks();
         });
     });
@@ -61,6 +88,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Display tasks based on current list
     function displayTasks() {
         const tasksContainer = document.querySelector('.tasks');
+        if (!tasksContainer) return; // Exit if no tasks container (e.g., on calendar page)
+        
+        // Check if tasks container has calendar content
+        if (tasksContainer.querySelector('.calendar-table')) return;
+        
         tasksContainer.innerHTML = '';
 
         const filteredTasks = currentList === 'All Tasks' 

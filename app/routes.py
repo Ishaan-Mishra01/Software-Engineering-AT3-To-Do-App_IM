@@ -20,7 +20,25 @@ def index():
 def home():
     if 'user' not in session:
         return redirect(url_for('main.login'))
-    return render_template('home.html', username=session['user'])
+    return render_template('home.html', username=session['user'], active_list='All Tasks')
+
+@main.route('/tasks/all')
+def all_tasks():
+    if 'user' not in session:
+        return redirect(url_for('main.login'))
+    return render_template('home.html', username=session['user'], active_list='All Tasks')
+
+@main.route('/tasks/personal')
+def personal_tasks():
+    if 'user' not in session:
+        return redirect(url_for('main.login'))
+    return render_template('home.html', username=session['user'], active_list='Personal')
+
+@main.route('/tasks/work')
+def work_tasks():
+    if 'user' not in session:
+        return redirect(url_for('main.login'))
+    return render_template('home.html', username=session['user'], active_list='Work')
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():

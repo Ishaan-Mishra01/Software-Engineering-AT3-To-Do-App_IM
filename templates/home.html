@@ -30,17 +30,17 @@
             <div class="sidebar-content">
                 <h3>Lists</h3>
                 <ul class="todo-lists">
-                    <li class="list-item active">All Tasks</li>
-                    <li class="list-item">Personal</li>
-                    <li class="list-item">Work</li>
-                    <li class="list-item"><a href="{{ url_for('calendar_routes.calendar_view') }}" style="text-decoration: none; color: inherit;">Calendar</a></li>
+                    <li class="list-item {% if active_list == 'All Tasks' %}active{% endif %}">All Tasks</li>
+                    <li class="list-item {% if active_list == 'Personal' %}active{% endif %}">Personal</li>
+                    <li class="list-item {% if active_list == 'Work' %}active{% endif %}">Work</li>
+                    <li class="calendar-nav-item"><a href="{{ url_for('calendar_routes.calendar_view') }}" style="text-decoration: none; color: inherit;">Calendar</a></li>
                 </ul>
                 <button class="add-list-btn">+ New List</button>
             </div>
         </div>
         {% block content %}
         <div class="todo-container">
-            <h2>All Tasks</h2>
+            <h2>{{ active_list or 'All Tasks' }}</h2>
             <div class="add-task">
                 <input type="text" placeholder="Add a task..." class="task-input">
                 <input type="date" class="due-date-input" placeholder="Due date">
