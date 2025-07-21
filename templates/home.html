@@ -34,6 +34,8 @@
                     <li class="list-item {% if active_list == 'Personal' %}active{% endif %}">Personal</li>
                     <li class="list-item {% if active_list == 'Work' %}active{% endif %}">Work</li>
                     <li class="calendar-nav-item"><a href="{{ url_for('calendar_routes.calendar_view') }}" style="text-decoration: none; color: inherit;">Calendar</a></li>
+                    <li class="breakout-nav-item"><a href="#" id="breakout-toggle" style="text-decoration: none; color: inherit;">Breakout</a></li> <!--Similar to the calendar integration above-->
+
                 </ul>
                 <button class="add-list-btn">+ New List</button>
             </div>
@@ -54,6 +56,28 @@
                 </div>
             </div>
         </div>
+        <div id="breakout-game" style="display: none;">
+            <div id="game-container">
+                <canvas id="canvas" width="480" height="380"></canvas>
+                <br>
+                <div id="controls" style="text-align: center; margin-top: 12px;">
+                    <button id="play-button" style="padding: 8px 16px; margin-right: 10px;">Play</button>
+                    <button id="pause-button" style="padding: 8px 16px;">Pause</button>
+                </div>
+
+                <br>
+                <div id="instructions">Use <strong>Left</strong> and <strong>Right</strong> arrow keys to move the paddle.</div>
+
+
+
+        <!-- Pause Button -->
+                <button id="pause-button" style="display:none;">Pause</button>
+
+        <!-- Score -->
+                <div id="score">Score: 0</div>
+            </div>
+        </div>
+
         {% endblock %}
     </div>
     
@@ -74,5 +98,35 @@
     <button id="chatbot-toggle" class="chatbot-toggle">🤖</button>
     
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/breakout.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const breakoutToggle = document.getElementById('breakout-toggle');
+        const breakoutGame = document.getElementById('breakout-game');
+        const todoContainer = document.querySelector('.todo-container');
+
+        breakoutToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            breakoutGame.style.display = 'block';
+            todoContainer.style.display = 'none';
+        });
+
+        document.querySelectorAll('.list-item').forEach(item => {
+            item.addEventListener('click', () => {
+            breakoutGame.style.display = 'none';
+            todoContainer.style.display = 'block';
+            });
+        });
+
+        document.querySelector('.calendar-nav-item')?.addEventListener('click', () => {
+        breakoutGame.style.display = 'none';
+        });
+
+        document.getElementById('chatbot-toggle')?.addEventListener('click', () => {
+        breakoutGame.style.display = 'none';
+        });
+    });
+    </script>
+
 </body>
 </html>

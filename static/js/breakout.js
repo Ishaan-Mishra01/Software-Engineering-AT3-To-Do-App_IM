@@ -13,7 +13,7 @@ class Ball {
 	}
 	draw(context) { //this allows the ball to exist. Context is a param that refers to "CanvasRenderingContext2D" which is being passed in which allows the drawing capabilites of canvas to be used
 		context.beginPath(); //Begin path is how we start drawin on canvas
-		context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);//drawing circle thru the arc method. Last 2 things are start and end angle(in radians).
+		context.arc(Math.round(this.x), Math.round(this.y), this.radius, 0, Math.PI * 2); //drawing circle thru the arc method. Last 2 things are start and end angle(in radians).
 		context.fillStyle = "red"; // This is the colour
 		context.fill(); //this applies the fill style
 		context.closePath(); // close the drawing path. Basically 'BEGIN' and 'END' keywords in pseudocode.
@@ -22,6 +22,18 @@ class Ball {
 		this.x += this.speedX; // updates the current pos of the ball in horizontal
 		this.y += this.speedY; // same as above but for vertical
 	}
+}
+
+function circleRectCollision(ball, brick) {
+    const closestX = Math.max(brick.x, Math.min(ball.x, brick.x + brick.width));
+    const closestY = Math.max(brick.y, Math.min(ball.y, brick.y + brick.height));
+
+    const distanceX = ball.x - closestX;
+    const distanceY = ball.y - closestY;
+
+    const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+    return distanceSquared < (ball.radius * ball.radius);
 }
 
 //Paddle object and functionality
@@ -40,7 +52,20 @@ class Paddle {
 
 	}
 	move(direction) {
-		this.x += this.speed * direction;
+		const speed = 7;
+		if (direction === -1) {
+			this.x -= speed;
+		} else if (direction === 1) {
+			this.x += speed;
+		}
+
+		// Restrict paddle within canvas bounds
+		if (this.x < 0) {
+			this.x = 0;
+		}
+		if (this.x + this.width > canvas.width) {
+			this.x = canvas.width - this.width;
+		}
 	}
 
 }
@@ -67,7 +92,7 @@ const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d"); //use get context method to access the "context" of the objects in order to utilise and draw them on the canvas
 // param of .getContext() is the context type, which here is 2D as the game is in 2 dimentions.
 const ball = new Ball(200, 200, 7, 2, 2); //new instance of the ball to test/see if it works, thru the "new" keyword. 
-const paddle = new Paddle(175, canvas.height-10,100,10, 15); //the canvas.height-10 is to place the canvas at the bottom
+const paddle = new Paddle(175, canvas.height-20,100,10, 7); //the canvas.height-10 is to place the canvas at the bottom
 //const creates an immutable variable
 
 
@@ -81,12 +106,13 @@ function createBrickWall(){
 	const brickWidth = 50;
 	const brickHeight = 20;
 	const brickPadding = 10; //separation btween bricks
+	const topOffset = 30;
 
 	//for loop to create brick wall
 	for (let c = 0; c < brickColumnCount; c++){  //loop thru columns. 'c' is just random var for column. 'c++' term is just the STEP/NEXT term (pseudocode) equivalent in JS.
 		for(let r = 0; r < brickRowCount; r++){ //nested for to loop thru rows. r++ adds one to row.
 			const x = c * (brickWidth + brickPadding); //x is xcoord
-			const y = r * (brickHeight + brickPadding); //y coord calcs
+			const y = r * (brickHeight + brickPadding) + topOffset; //y coord calcs
 			bricks.push(new Brick(x, y, brickWidth, brickHeight)); // push this to bricks array with .push.
 		}
 	}
@@ -98,29 +124,29 @@ function createBrickWall(){
 // Update and draw bricks
 
 function drawBricks(){
-	bricks.forEach(brick =>{ //upgraded for loop? forEach --> loops thru each brick iteration in the array
-		if(brick.status === 1){
+	bricks.forEach(brick => {
+		if (brick.status === 1){
 			brick.draw(context);
-			//check for collision with ball
-			if (ball.x> brick.x && ball.x < brick.x + brick.width &&
-				ball.y > brick.y && ball.y < brick.y + brick.height){
-					ball.speedY = -ball.speedY;
-					brick.status = 0;
-					score +=10;
-					document.getElementById("score").innerHTML = `Score: ${score}`;
-				}
+			if (circleRectCollision(ball, brick)) {
+				ball.speedY = -ball.speedY;  // reverse ball vertical direction on collision
+				brick.status = 0;           // brick destroyed
+				score += 10;
+				document.getElementById("score").innerHTML = `Score: ${score}`;
+			}
 		}
-	})
+	});
 }
+
 
 //paddle control
 
+let moveDirection = 0;
 document.addEventListener("keydown", (event)=>{
 	if(event.key === "ArrowLeft") { //"keydown" event is when key is pressed.
 //Additionally, '===' is the JS equivalent of python '==', because in JS, 2 equality signs do not represent a strict equality, rather "they attempt to coerce the value, if they are of different types," To quote Douglas Crockford's excellent JavaScript: The Good Parts.
-		paddle.move(-1);
+		moveDirection = -1;
 	} else if(event.key === "ArrowRight"){ // 'else if' rather than elif ;-; 
-		paddle.move(1);
+		moveDirection = 1;
 	}
 	//cheat
 	else if(event.key === "ArrowDown"){
@@ -130,7 +156,7 @@ document.addEventListener("keydown", (event)=>{
 
 document.addEventListener("keyup", (event)=>{
 	if(event.key === "ArrowLeft" || event.key === "ArrowRight"){
-		paddle.move(0);
+		moveDirection = 0
 	} //cheat
 	else if(event.key === "ArrowDown"){
 		paddle.width = 100;
@@ -153,6 +179,7 @@ function resetGame(){
 
 
 function gameLoop(){
+	if (isPaused) return; // don't update if paused
 	//clear canvas
 	context.clearRect(0,0, canvas.clientWidth, canvas.clientHeight);
 	
@@ -184,13 +211,18 @@ function gameLoop(){
 	if(ball.y + ball.radius > canvas.height){
 		alert("Game Over! You Lose!")
 		resetGame();
+		isPaused = true;
+		showOverlay();
 	}
 
 	if(bricks.every(brick => brick.status === 0)){
 		alert("Congratulations! You are legend! \n Score: " + score);
 		resetGame();
+		isPaused = true;
+		showOverlay();
 	}
 	//paddle
+	paddle.move(moveDirection);
 	paddle.draw(context);
 	
 	//bricks
@@ -200,5 +232,37 @@ function gameLoop(){
 	requestAnimationFrame(gameLoop); //built in JS function for smooth animation
 
 }
+/*
+function showOverlay() {
+	document.getElementById("overlay").style.display = "flex";
+}
 
-gameLoop();
+function hideOverlay() {
+	document.getElementById("overlay").style.display = "none";
+}
+No longer useful as the overlaid button is being removed */
+
+
+// Event listeners for play and pause
+window.addEventListener("load", () => {
+	document.getElementById("play-button").addEventListener("click", () => {
+		isPaused = false;
+		requestAnimationFrame(gameLoop);
+	});
+
+	document.getElementById("pause-button").addEventListener("click", () => {
+		isPaused = true;
+	});
+});
+
+
+document.querySelectorAll('.list-item').forEach(item => {
+	item.addEventListener('click', () => {
+		isPaused = true;
+	});
+});
+
+document.getElementById('chatbot-toggle')?.addEventListener('click', () => {
+	isPaused = true;
+});
+

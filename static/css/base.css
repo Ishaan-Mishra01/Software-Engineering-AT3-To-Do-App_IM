@@ -793,3 +793,122 @@ body {
         font-size: 20px;
     }
 }
+
+/* Breakout Game Container Styles */
+#breakout-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 2rem);
+    margin-left: var(--sidebar-width); /* avoid overlap with sidebar */
+    padding: 1rem;
+    box-sizing: border-box;
+    position: relative;
+    background-color: #f8f9fa;
+}
+
+#breakout-canvas {
+    background-color: black;
+    border: 2px solid #fff;
+}
+
+#breakout-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 10;
+}
+
+#breakout-overlay button {
+    background: #28a745;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+#pause-button {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background-color: #ffc107;
+    color: black;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 5;
+}
+
+#breakout-game {
+    margin-left: var(--sidebar-width);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.breakout-game-wrapper {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#canvas {
+    display: block;
+    background-color: white;
+    border: 1px solid #ccc;
+    margin-bottom: 1rem auto; /*to centre horizontally*/
+}
+
+#pause-button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+}
+
+.breakout-overlay {
+    position: absolute;
+    top: 0;
+    left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.overlay-content {
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 1rem;
+    text-align: center;
+}
+
+.overlay-content button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+#instructions {
+    text-align:center;
+    margin-top: 10px;
+    font-family: monaco, Consolas, "Lucida Console", monospace;
+    font-size: 16px; color: #333;
+}

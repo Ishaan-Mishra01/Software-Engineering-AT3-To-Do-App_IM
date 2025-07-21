@@ -3,6 +3,7 @@ import os
 class Config:
     """Base configuration"""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+    GENAI_API_KEY = 'AIzaSyBA2Rc3Lns11CuGC6cflzhSn54CQbek5jo'
 
     SQLALCHEMY_DATABASE_URI = 'sqlite:///To_Do_DB.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False 

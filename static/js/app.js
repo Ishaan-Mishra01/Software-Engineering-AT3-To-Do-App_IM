@@ -48,7 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         item.addEventListener('click', function() {
             const newList = this.textContent;
-            
+
+            // Remove calendar view if present
+            document.querySelector('.calendar-view')?.remove();
+
             // Update active state
             document.querySelector('.list-item.active')?.classList.remove('active');
             this.classList.add('active');
@@ -136,35 +139,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add new task
     async function addTask() {
-        const taskText = taskInput.value.trim();
-        if (!taskText) return;
+    const taskText = taskInput.value.trim();
+    if (!taskText) return;
 
-        const dueDate = dueDateInput.value;
+    const dueDate = dueDateInput.value;
 
-        try {
-            const response = await fetch('/api/tasks', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: taskText,
-                    list: currentList === 'All Tasks' ? 'Personal' : currentList,
-                    due_date: dueDate || null
-                })
-            });
+    try {
+        const response = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: taskText,
+                list: currentList,
+                due_date: dueDate || null
+            })
+        });
 
-            if (response.ok) {
-                const newTask = await response.json();
-                allTasks.push(newTask);
-                displayTasks();
-                taskInput.value = '';
-                dueDateInput.value = '';
-            }
-        } catch (error) {
-            console.error('Error adding task:', error);
+        if (response.ok) {
+            const newTask = await response.json();
+            allTasks.push(newTask);     // Add to local memory
+            displayTasks();             // Refresh task display
+            taskInput.value = '';
+            dueDateInput.value = '';
+        } else {
+            console.error('Failed to add task:', await response.text());
         }
+    } catch (error) {
+        console.error('Error adding task:', error);
     }
+}
+
 
     // Update task
     async function updateTask(taskId, updates) {
@@ -216,6 +222,8 @@ document.addEventListener('DOMContentLoaded', function() {
         chatbotContainer.style.display = chatbotOpen ? 'flex' : 'none';
         chatbotToggle.style.display = chatbotOpen ? 'none' : 'block';
         
+        document.querySelector('.calendar-view')?.remove();
+
         if (chatbotOpen && chatbotMessages.children.length === 0) {
             // Add welcome message
             addChatMessage('🤖 Hi! I\'m here to help you with your to-do app. Ask me anything!', 'bot');

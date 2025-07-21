@@ -1,19 +1,33 @@
-
 """
-Chatbot functionality for To-Do Application
+Chatbot functionality for To-Do Application using Gemini API
 """
-import os
-from flask import session, has_request_context
-from app.models import load_data
 
-# For now, we'll implement a simple rule-based chatbot
-# Later this can be extended with actual AI integration
+import google.generativeai as genai
+from app.config import Config
 
-def get_chatbot_response(user_message):
-    """Get response from chatbot based on user message"""
-    message = user_message.lower().strip()
+# Configure Gemini API key once globally
+genai.configure(api_key=Config.GENAI_API_KEY)
+
+# Create the generative model instance with system instruction
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction="""
+    You are a helpful assistant integrated into a To-Do web application.
+
+    The user may ask you about:
+    • Creating tasks — explain how to add a new task, including optional due dates and categorising them (like Personal or Work).
+    • Deleting or completing tasks — describe marking tasks complete, deleting them, and how old completed tasks are automatically cleaned up after 30 days.
+    • Viewing tasks — describe how users can view active or completed tasks, including filtering and viewing them by list.
+    • Using the calendar — explain how users can add due dates, and view tasks in a calendar layout.
+    • Personalisation — explain features like organising tasks into categories, customising views, and upcoming improvements.
+    • General help — answer questions about the app’s features and how to use them.
+
+    You should respond clearly and helpfully. If the user asks something outside of the app, you may still answer like a normal assistant.
+
+    Keep responses concise but informative.
     
-    # Task management queries
+    The following are examples from a previous rule-based system containing any specifics of things with this app:
+        # Task management queries
     if any(word in message for word in ['create', 'add', 'new task']):
         return {
             'response': "To create a new task:\n1. Type your task in the input field at the top\n2. Optionally select a due date\n3. Click 'Add' or press Enter\n\nYou can also organize tasks into different lists like Personal or Work!",
@@ -82,10 +96,27 @@ def get_chatbot_response(user_message):
             'type': 'default'
         }
 
+    """
+)
+
+def get_chatbot_response(user_message):
+    """Send user message to Gemini and get the response"""
+    try:
+        response = model.generate_content(user_message)
+        return {
+            'response': response.text,
+            'type': 'ai'
+        }
+    except Exception as e:
+        return {
+            'response': f"Sorry, I had an issue processing your message. ({str(e)})",
+            'type': 'error'
+        }
+
 def format_chatbot_response(response_data):
-    """Format the chatbot response for display"""
+    """Format the chatbot response for frontend display"""
     return {
         'message': response_data['response'],
         'type': response_data['type'],
-        'timestamp': None  # Can add timestamp if needed
+        'timestamp': None  # Replace with actual timestamp if needed
     }

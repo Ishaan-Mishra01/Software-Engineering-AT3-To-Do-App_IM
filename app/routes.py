@@ -53,7 +53,10 @@ def login():
         password = request.form.get('password')
         
         hashed_pw = hash_password(password)
-        user = User.query.get(email=email, username=username, password=hashed_pw, created=datetime.now()) #I don't really know how to change this created time if the user isn't signing up for first time
+        # Look up user by email
+        user = User.query.filter_by(email=email).first()
+
+ 
         data = load_data()
         
         if user:
