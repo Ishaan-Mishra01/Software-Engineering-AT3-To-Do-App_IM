@@ -53,10 +53,10 @@ class Brick {
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		this.status = 1;
+		this.status = 1; //Brick is intact (i.e. ball hasn't hit yet). Status = 0 means it has been hit
 	}
 	draw(context){
-		if(this.status === 1){
+		if(this.status === 1){ //checks if each brick has been hit or not. If this fails, the brick is not drawn.
 			context.fillStyle = 'green';
 			context.fillRect(this.x, this.y, this.width, this.height);
 		}
@@ -73,20 +73,21 @@ const paddle = new Paddle(175, canvas.height-10,100,10, 15); //the canvas.height
 
 //brick wall
 
-const bricks = [];
+const bricks = []; //array of all the bricks
 
 function createBrickWall(){
-	const brickRowCount = 4;
-	const brickColumnCount = 8;
+	const brickRowCount = 4; //no of rows
+	const brickColumnCount = 8; //no of columns
 	const brickWidth = 50;
 	const brickHeight = 20;
-	const brickPadding = 10;
+	const brickPadding = 10; //separation btween bricks
 
-	for (let c = 0; c < brickColumnCount; c++){
-		for(let r = 0; r < brickRowCount; r++){
-			const x = c * (brickWidth + brickPadding);
-			const y = r * (brickHeight + brickPadding);
-			bricks.push(new Brick(x, y, brickWidth, brickHeight));
+	//for loop to create brick wall
+	for (let c = 0; c < brickColumnCount; c++){  //loop thru columns. 'c' is just random var for column. 'c++' term is just the STEP/NEXT term (pseudocode) equivalent in JS.
+		for(let r = 0; r < brickRowCount; r++){ //nested for to loop thru rows. r++ adds one to row.
+			const x = c * (brickWidth + brickPadding); //x is xcoord
+			const y = r * (brickHeight + brickPadding); //y coord calcs
+			bricks.push(new Brick(x, y, brickWidth, brickHeight)); // push this to bricks array with .push.
 		}
 	}
 }
@@ -97,7 +98,7 @@ function createBrickWall(){
 // Update and draw bricks
 
 function drawBricks(){
-	bricks.forEach(brick =>{
+	bricks.forEach(brick =>{ //upgraded for loop? forEach --> loops thru each brick iteration in the array
 		if(brick.status === 1){
 			brick.draw(context);
 			//check for collision with ball

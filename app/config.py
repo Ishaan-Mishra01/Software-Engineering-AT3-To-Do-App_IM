@@ -1,12 +1,12 @@
-"""
-Configuration settings for To-Do App
-"""
 import os
 
 class Config:
     """Base configuration"""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    DATA_FILE = os.environ.get('DATA_FILE', 'data.json')
+
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///To_Do_DB.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False 
+
     DEBUG = False
     TESTING = False
 
@@ -19,16 +19,17 @@ class TestingConfig(Config):
     """Testing configuration"""
     TESTING = True
     WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  #In-memory db for faster tests
 
 class ProductionConfig(Config):
     """Production configuration"""
-    def __init__(self):
-        super().__init__()
-        self.SECRET_KEY = os.environ.get('SECRET_KEY')
-        if not self.SECRET_KEY:
-            raise ValueError("No SECRET_KEY set for production")
+    DEBUG = False
 
-# Configuration dictionary
+
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///prod.db')
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+
+#Config dict
 config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,

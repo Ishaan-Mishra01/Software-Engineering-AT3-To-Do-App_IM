@@ -24,6 +24,7 @@ def save_data(data):
     with open(data_file, 'w') as f:
         json.dump(data, f, indent=2)
 
+
 def cleanup_old_completed_tasks(user_email, days_old=30):
     """Remove completed tasks older than specified days"""
     data = load_data()
@@ -50,6 +51,7 @@ def cleanup_old_completed_tasks(user_email, days_old=30):
         save_data(data)
     
     return removed_count
+
 
 def mark_task_completed(user_email, task_id):
     """Mark a task as completed and add completion timestamp"""

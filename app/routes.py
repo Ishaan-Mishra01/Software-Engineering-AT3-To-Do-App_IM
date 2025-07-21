@@ -1,14 +1,19 @@
 """
 Routes for To-Do Application
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash
 from datetime import datetime
 from app.models import load_data, save_data, cleanup_old_completed_tasks, mark_task_completed
 from app.chatbot import get_chatbot_response, format_chatbot_response
 import calendar
+from app.databases import db, User, Task, cleanup_old_completed_tasks
+from app.utils import hash_password
+from datetime import datetime
 
 main = Blueprint('main', __name__)
 calendar_routes = Blueprint('calendar_routes', __name__)
+
+#Routes:
 
 @main.route('/')
 def index():
@@ -47,26 +52,29 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         
+        hashed_pw = hash_password(password)
+        user = User.query.get(email=email, username=username, password=hashed_pw, created=datetime.now()) #I don't really know how to change this created time if the user isn't signing up for first time
         data = load_data()
         
-        # Simple registration/login logic
-        if email in data['users']:
-            # Check login
-            if data['users'][email]['password'] == password:
-                session['user'] = data['users'][email]['username']
-                session['email'] = email
+        if user:
+            #check if user already registered
+            if user.password == hash_password(password):
+                session['user'] = user.username
+                session['email'] = user.email
                 return redirect(url_for('main.home'))
             else:
                 return render_template('login.html', error='Invalid credentials')
         else:
             # Register new user
-            data['users'][email] = {
-                'username': username,
-                'password': password,
-                'created': datetime.now().isoformat()
-            }
-            data['tasks'][email] = []
-            save_data(data)
+            new_user = User(
+                email=email,
+                username=username,
+                password=hash_password(password),
+                created=datetime.now()
+            )
+            db.session.add(new_user)
+            db.session.commit()
+
             session['user'] = username
             session['email'] = email
             return redirect(url_for('main.home'))
@@ -83,66 +91,75 @@ def logout():
 def tasks():
     if 'email' not in session:
         return jsonify({'error': 'Not logged in'}), 401
-    
-    data = load_data()
+
     user_email = session['email']
-    
+
     if request.method == 'GET':
-        # Cleanup old completed tasks before returning
-        cleanup_old_completed_tasks(user_email)
-        
-        # Reload data after cleanup
-        data = load_data()
-        user_tasks = data['tasks'].get(user_email, [])
-        return jsonify(user_tasks)
-    
+        user_tasks = Task.query.filter_by(user_email=user_email).all()
+        return jsonify([
+            {
+                'id': task.id,
+                'text': task.text,
+                'completed': task.completed,
+                'list': task.list,
+                'due_date': task.due_date,
+                'created': task.created.isoformat(),
+                'completed_date': task.completed_date.isoformat() if task.completed_date else None
+            } for task in user_tasks
+        ])
+
     elif request.method == 'POST':
         task_data = request.json
-        new_task = {
-            'id': str(datetime.now().timestamp()),
-            'text': task_data['text'],
-            'completed': False,
-            'list': task_data.get('list', 'All Tasks'),
-            'due_date': task_data.get('due_date'),
-            'created': datetime.now().isoformat()
-        }
-        
-        if user_email not in data['tasks']:
-            data['tasks'][user_email] = []
-        
-        data['tasks'][user_email].append(new_task)
-        save_data(data)
-        return jsonify(new_task)
+        new_task = Task(
+            text=task_data['text'],
+            list=task_data.get('list', 'All Tasks'),
+            due_date=task_data.get('due_date'),
+            created=datetime.now(),
+            user_email=user_email
+        )
+        db.session.add(new_task)
+        db.session.commit()
 
-@main.route('/api/tasks/<task_id>', methods=['PUT', 'DELETE'])
+        return jsonify({
+            'id': new_task.id,
+            'text': new_task.text,
+            'completed': new_task.completed,
+            'list': new_task.list,
+            'due_date': new_task.due_date,
+            'created': new_task.created.isoformat()
+        })
+
+
+@main.route('/api/tasks/<int:task_id>', methods=['PUT', 'DELETE'])
 def task_detail(task_id):
     if 'email' not in session:
         return jsonify({'error': 'Not logged in'}), 401
-    
-    data = load_data()
-    user_email = session['email']
-    user_tasks = data['tasks'].get(user_email, [])
-    
-    if request.method == 'PUT':
-        task_update = request.json
-        for task in user_tasks:
-            if task['id'] == task_id:
-                # If marking as completed, add completion timestamp
-                if task_update.get('completed') and not task.get('completed'):
-                    task_update['completed_date'] = datetime.now().isoformat()
-                # If marking as not completed, remove completion timestamp
-                elif not task_update.get('completed', True) and task.get('completed'):
-                    task_update['completed_date'] = None
-                    
-                task.update(task_update)
-                save_data(data)
-                return jsonify(task)
+
+    task = Task.query.filter_by(id=task_id, user_email=session['email']).first()
+
+    if not task:
         return jsonify({'error': 'Task not found'}), 404
-    
-    elif request.method == 'DELETE':
-        data['tasks'][user_email] = [t for t in user_tasks if t['id'] != task_id]
-        save_data(data)
+
+    if request.method == 'PUT':
+        task_data = request.json
+        task.text = task_data.get('text', task.text)
+        task.list = task_data.get('list', task.list)
+        task.due_date = task_data.get('due_date', task.due_date)
+        task.completed = task_data.get('completed', task.completed)
+
+        if task_data.get('completed') and not task.completed_date:
+            task.completed_date = datetime.now()
+        elif not task_data.get('completed') and task.completed_date:
+            task.completed_date = None
+
+        db.session.commit()
         return jsonify({'success': True})
+
+    elif request.method == 'DELETE':
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({'success': True})
+
     
 @calendar_routes.route('/calendar')
 def calendar_view():
@@ -216,13 +233,10 @@ def chatbot():
 
 @main.route('/api/cleanup-tasks', methods=['POST'])
 def cleanup_tasks():
-    """Manually trigger cleanup of old completed tasks"""
     if 'email' not in session:
         return jsonify({'error': 'Not logged in'}), 401
-    
-    user_email = session['email']
-    removed_count = cleanup_old_completed_tasks(user_email)
-    
+
+    removed_count = cleanup_old_completed_tasks(session['email'])
     return jsonify({
         'message': f'Removed {removed_count} old completed tasks',
         'removed_count': removed_count
