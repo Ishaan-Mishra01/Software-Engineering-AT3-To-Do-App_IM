@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Login - To-Do App</title>
+</head>
+<body>
+    <div class="login-form-container">
+        <img src="{{ url_for('static', filename='images/To-Do_App_Logo.png') }}" class="logo" alt="To-Do App Logo">
+        <h2>Login / Register</h2>
+        {% if error %}
+        <p style="color: red; margin-bottom: 1em;">{{ error }}</p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('main.login') }}">
+            <div class="input-fields">
+                <div class="input-field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email." required>
+                </div>
+                <div class="input-field">
+                    <label for="username">Username <small>(only for new users)</small></label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username.">
+                </div>
+                <div class="input-field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password." required>
+                </div>
+                <input type="submit" class="submit-button" value="Login / Register">
+            </div>
+        </form>
+        <p style="text-align: center; margin-top: 1em; color: #666;">
+            Existing users: Enter email and password<br>
+            New users: Fill all fields to register
+        </p>
+    </div>
+</body>
+</html>
